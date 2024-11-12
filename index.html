@@ -6,59 +6,91 @@
     <title>MLBB User ID Checker</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
         margin: 0;
-        background-color: #f2f2f2;
+        background-color: #f3f4f6;
       }
       .container {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        width: 300px;
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        width: 320px;
         text-align: center;
       }
       .container h2 {
         margin: 0 0 20px;
+        font-weight: 600;
+        color: #333333;
       }
       .input-group {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
+        text-align: left;
       }
       .input-group label {
         display: block;
-        font-weight: bold;
-        font-size: 22px;
+        font-weight: 600;
         margin-bottom: 5px;
+        color: #4a4a4a;
       }
       .input-group input {
         width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box; /* Ensures the input fits perfectly within the box */
+        padding: 12px;
+        font-size: 25px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+      }
+      .input-group input:focus {
+        outline: none;
+        border-color: #4caf50;
+        box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
       }
       #checkButton {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
+        font-size: 18px;
         background-color: #4caf50;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s, box-shadow 0.3s;
+      }
+      #checkButton:hover {
+        background-color: #45a049;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      #checkButton:disabled {
+        background-color: #d1d5db;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+      #invalidMessage {
+        margin-top: 15px;
+        font-weight: bold;
+        color: #333;
+        font-size: 16px;
+      }
+      #copyButton {
+        display: none;
+        margin-top: 10px;
+        padding: 8px;
+        background-color: #007bff;
         color: white;
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        font-weight: bold;
+        font-size: 16px;
       }
-      #checkButton:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-      }
-      #invalidMessage {
-        margin-top: 18px;
-        font-weight: bold;
-        color: #333;
+      #copyButton:hover {
+        background-color: #0056b3;
       }
     </style>
   </head>
@@ -75,6 +107,7 @@
       </div>
       <button id="checkButton" onclick="checkApi()">Check</button>
       <div id="invalidMessage"></div>
+      <button id="copyButton" onclick="copyName()">Copy Name</button>
     </div>
 
     <!-- jQuery CDN -->
@@ -84,7 +117,8 @@
       const serverIdInput = document.getElementById("serverIdInput");
       const invalidMessage = document.getElementById("invalidMessage");
       const checkButton = document.getElementById("checkButton");
-      let isUserValid = false;
+      const copyButton = document.getElementById("copyButton");
+      let userName = "";
 
       function enablePaymentButton() {
         checkButton.disabled = false;
@@ -123,26 +157,31 @@
           timeout: 60000,
           success: function (response) {
             if (response.valid === "valid") {
-              isUserValid = true;
-              invalidMessage.textContent = response.name
-                ? `MLBB Name: ${response.name} 😂`
-                : "Valid ID, but name not provided.";
+              userName = response.name || "Valid ID, but name not provided.";
+              invalidMessage.textContent = `MLBB Name: ${userName}`;
+              copyButton.style.display = "block";
               enablePaymentButton();
             } else if (response.valid === "invalid") {
-              isUserValid = false;
               invalidMessage.textContent = "Invalid ID. Please check again.";
+              copyButton.style.display = "none";
               disablePaymentButton();
             } else {
-              isUserValid = false;
               invalidMessage.textContent = "Unexpected response.";
+              copyButton.style.display = "none";
               disablePaymentButton();
             }
           },
           error: function (error) {
-            isUserValid = false;
             invalidMessage.textContent = "Error: " + JSON.stringify(error);
+            copyButton.style.display = "none";
             disablePaymentButton();
           },
+        });
+      }
+
+      function copyName() {
+        navigator.clipboard.writeText(userName).then(() => {
+          alert("MLBB Name copied to clipboard!");
         });
       }
     </script>
