@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MLBB User ID Checker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f2f2f2;
+      }
+      .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        text-align: center;
+      }
+      .container h2 {
+        margin: 0 0 20px;
+      }
+      .input-group {
+        margin-bottom: 15px;
+      }
+      .input-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .input-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box; /* Ensures the input fits perfectly within the box */
+      }
+      #checkButton {
+        width: 100%;
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      #checkButton:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+      #invalidMessage {
+        margin-top: 15px;
+        font-weight: bold;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>MLBB ID Checker</h2>
+      <div class="input-group">
+        <label for="userIdInput">User ID</label>
+        <input type="text" id="userIdInput" placeholder="Enter User ID" />
+      </div>
+      <div class="input-group">
+        <label for="serverIdInput">Server ID</label>
+        <input type="text" id="serverIdInput" placeholder="Enter Server ID" />
+      </div>
+      <button id="checkButton" onclick="checkApi()">Check</button>
+      <div id="invalidMessage"></div>
+    </div>
+
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      const userIdInput = document.getElementById("userIdInput");
+      const serverIdInput = document.getElementById("serverIdInput");
+      const invalidMessage = document.getElementById("invalidMessage");
+      const checkButton = document.getElementById("checkButton");
+      let isUserValid = false;
+
+      function enablePaymentButton() {
+        checkButton.disabled = false;
+      }
+
+      function disablePaymentButton() {
+        checkButton.disabled = true;
+      }
+
+      function checkApi() {
+        const userId = userIdInput.value;
+        const serverId = serverIdInput.value;
+
+        if (!userId || !serverId) {
+          invalidMessage.textContent =
+            "Please enter both User ID and Server ID.";
+          return;
+        }
+
+        const url = "https://api.elitedias.com/checkid";
+        const headers = {
+          Origin: "dev.api.elitedias.com",
+        };
+        const payload = {
+          userid: userId,
+          serverid: serverId,
+          game: "mlbb",
+        };
+
+        $.ajax({
+          type: "POST",
+          url: url,
+          headers: headers,
+          data: JSON.stringify(payload),
+          contentType: "application/json",
+          timeout: 60000,
+          success: function (response) {
+            if (response.valid === "valid") {
+              isUserValid = true;
+              invalidMessage.textContent = response.name
+                ? `MLBB Name: ${response.name} 😂`
+                : "Valid ID, but name not provided.";
+              enablePaymentButton();
+            } else if (response.valid === "invalid") {
+              isUserValid = false;
+              invalidMessage.textContent = "Invalid ID. Please check again.";
+              disablePaymentButton();
+            } else {
+              isUserValid = false;
+              invalidMessage.textContent = "Unexpected response.";
+              disablePaymentButton();
+            }
+          },
+          error: function (error) {
+            isUserValid = false;
+            invalidMessage.textContent = "Error: " + JSON.stringify(error);
+            disablePaymentButton();
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
